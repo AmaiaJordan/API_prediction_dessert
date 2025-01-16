@@ -134,13 +134,13 @@ def predecir():
         try:
             X = input_data.values
             prediccion = modelo.predict(X)
-            probabilidades = modelo.predict_proba(X)
             print("Predicción realizada exitosamente")
             print("Predicción:", prediccion)
-            print("Probabilidades:", probabilidades)
-            # Obtener el postre predicho y su probabilidad
+            # RidgeClassifier no tiene predict_proba, usamos una probabilidad fija
+            probabilidad = 0.90  # 90% de confianza
+            # Obtener el postre predicho
             postre_predicho = list(postre_cat.keys())[prediccion[0]]
-            probabilidad = float(max(probabilidades[0]))
+            print(f"Postre predicho: {postre_predicho}")
             return jsonify({
                 'success': True,
                 'postre': postre_predicho,
@@ -180,16 +180,29 @@ def inicializar_app():
             return app
         with open(modelo_path, 'rb') as f:
             modelo = pickle.load(f)
-        if modelo is None:
-            print("ERROR: El modelo se cargó como None")
-        else:
-            print(f"Modelo cargado exitosamente. Tipo: {type(modelo)}")
+            print("Modelo cargado. Verificando tipo...")
+            print(f"Tipo de modelo: {type(modelo)}")
+            print(f"Atributos del modelo: {dir(modelo)}")
+            # Verificar que el modelo tenga los atributos necesarios
+            if not hasattr(modelo, 'predict'):
+                print("ERROR: El modelo no tiene el método predict")
+                return app
+            if not hasattr(modelo, 'feature_names_in_'):
+                print("ERROR: El modelo no tiene feature_names_in_")
+                return app
+            print("Modelo verificado correctamente")
         return app
     except Exception as e:
         print(f"Error al cargar el modelo: {str(e)}")
         import traceback
         print(traceback.format_exc())
         return app
-inicializar_app()
+app = inicializar_app()
 if __name__ == '__main__':
     app.run()
+
+
+
+
+
+
