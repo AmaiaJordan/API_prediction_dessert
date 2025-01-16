@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Predicción de Postres</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🍰 Predicción de Postres</h1>
+        
+        <form id="prediccionForm">
+            <div class="form-group">
+                <label for="edad"><i class="fas fa-birthday-cake"></i> ¿Cuál es tu edad?</label>
+                <input type="number" id="edad" name="edad" min="18" max="90" required>
+                <div class="error-message">La edad debe estar entre 18 y 90 años</div>
+            </div>
+
+            <div class="form-group">
+                <label for="genero"><i class="fas fa-venus-mars"></i> ¿Cuál es tu género?</label>
+                <select id="genero" name="genero" required>
+                    <option value="">Selecciona una opción</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="entrante"><i class="fas fa-concierge-bell"></i> ¿Qué entrante te apetece?</label>
+                <select id="entrante" name="entrante" required>
+                    <option value="">Selecciona una opción</option>
+                    <option value="Ensaladilla">Ensaladilla</option>
+                    <option value="Jamón">Jamón</option>
+                    <option value="Gazpacho">Gazpacho</option>
+                    <option value="Empanada">Empanada</option>
+                    <option value="Langostinos">Langostinos</option>
+                    <option value="Mejillones">Mejillones</option>
+                    <option value="Croquetas">Croquetas</option>
+                    <option value="Ensalada César">Ensalada César</option>
+                    <option value="Espárragos">Espárragos</option>
+                    <option value="Ninguno">Ninguno</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="primer_plato"><i class="fas fa-utensils"></i> ¿Qué primer plato has elegido?</label>
+                <select id="primer_plato" name="primer_plato" required>
+                    <option value="">Selecciona una opción</option>
+                    <option value="Macarrones">Macarrones</option>
+                    <option value="Paella">Paella</option>
+                    <option value="Crema de verduras">Crema de verduras</option>
+                    <option value="Lentejas">Lentejas</option>
+                    <option value="Risotto">Risotto</option>
+                    <option value="Lasaña">Lasaña</option>
+                    <option value="Arroz 3 delicias">Arroz 3 delicias</option>
+                    <option value="Garbanzos con espinacas">Garbanzos con espinacas</option>
+                    <option value="Sopa de pollo">Sopa de pollo</option>
+                    <option value="Menestra de verduras">Menestra de verduras</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="segundo_plato"><i class="fas fa-drumstick-bite"></i> ¿Y de segundo plato?</label>
+                <select id="segundo_plato" name="segundo_plato" required>
+                    <option value="">Selecciona una opción</option>
+                    <option value="Pollo al curry">Pollo al curry</option>
+                    <option value="Pollo asado">Pollo asado</option>
+                    <option value="Cachopo">Cachopo</option>
+                    <option value="Merluza al horno">Merluza al horno</option>
+                    <option value="Hamburguesa">Hamburguesa</option>
+                    <option value="Chuletón">Chuletón</option>
+                    <option value="Bacalao">Bacalao</option>
+                    <option value="Filete de ternera">Filete de ternera</option>
+                    <option value="Costillas BBQ">Costillas BBQ</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="bebida"><i class="fas fa-glass-cheers"></i> ¿Qué bebida acompaña tu comida?</label>
+                <select id="bebida" name="bebida" required>
+                    <option value="">Selecciona una opción</option>
+                    <option value="Agua">Agua</option>
+                    <option value="Vino blanco">Vino blanco</option>
+                    <option value="Vino tinto">Vino tinto</option>
+                    <option value="Refresco">Refresco</option>
+                    <option value="Cerveza">Cerveza</option>
+                </select>
+            </div>
+
+            <button type="submit"><i class="fas fa-magic"></i> Descubre tu Postre Ideal</button>
+        </form>
+
+        <div id="resultado" class="resultado-container" style="display: none;">
+            <h2><i class="fas fa-magic"></i> Le sugerimos tomar como postre:</h2>
+            <div class="postre-predicho">
+                <h3 id="postre-nombre" class="nombre-postre"></h3>
+                <div class="probabilidad-container">
+                    <div class="progress">
+                        <div id="probabilidad-barra" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                    <p class="probabilidad-texto">Nivel de confianza: <span id="probabilidad-valor">0</span>%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
