@@ -4,9 +4,7 @@ import numpy as np
 import pickle
 import os
 from sklearn.linear_model import RidgeClassifier
-
 app = Flask(__name__)
-
 # Variables globales
 modelo = None
 postre_cat = {
@@ -173,7 +171,7 @@ def inicializar_app():
     global modelo
     try:
         # Usar path absoluto para PythonAnywhere
-        modelo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modelo_postres.pkl')
+        modelo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'RidgeClassifier.pkl')
         print(f"Intentando cargar modelo desde: {modelo_path}")
         if not os.path.exists(modelo_path):
             print(f"ERROR: El archivo del modelo no existe en: {modelo_path}")
