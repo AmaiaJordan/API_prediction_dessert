@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, jsonify
-from flask_cors import CORS
 import pandas as pd
 import numpy as np
 import pickle
@@ -7,7 +6,6 @@ import os
 from sklearn.linear_model import RidgeClassifier
 
 app = Flask(__name__)
-CORS(app)
 
 # Variables globales
 modelo = None
@@ -19,7 +17,6 @@ postre_cat = {
     "Brownie": 4,
     "Queso y membrillo": 5
 }
-
 # Mapeos para categorización
 primeros_cat = {
     "Risotto": "arroz",
@@ -32,7 +29,6 @@ primeros_cat = {
     "Garbanzos con espinacas": "legumbres",
     "Sopa de pollo": "sopa"
 }
-
 segundos_cat = {
     "Filete de ternera": "carne",
     "Merluza al horno": "pescado",
@@ -46,14 +42,12 @@ segundos_cat = {
     "Salmón": "pescado",
     "Bacalao": "pescado"
 }
-
 @app.route('/')
 def home():
     """
     Ruta principal que renderiza la página web
     """
     return render_template('index.html')
-
 @app.route('/predecir', methods=['POST'])
 def predecir():
     """
@@ -62,21 +56,20 @@ def predecir():
     try:
         # Verificar si el modelo está cargado
         if modelo is None:
+            print("Error: Modelo no inicializado")
             return jsonify({
                 'success': False,
                 'message': 'El modelo no está inicializado correctamente'
             }), 500
-
         # Obtener datos del request
         datos = request.get_json()
         if not datos:
+            print("Error: No se recibieron datos en el request")
             return jsonify({
                 'success': False,
                 'message': 'No se recibieron datos'
             }), 400
-
         print("\nDatos recibidos:", datos)
-        
         # Crear un DataFrame con una fila
         try:
             input_data = pd.DataFrame({
@@ -87,24 +80,25 @@ def predecir():
                 'Segundo Plato': [datos.get('segundo_plato')],
                 'Bebida': [datos.get('bebida')]
             })
+            print("DataFrame creado exitosamente:", input_data)
         except ValueError as e:
+            print(f"Error al crear DataFrame: {str(e)}")
             return jsonify({
                 'success': False,
-                'message': 'Error en el formato de los datos'
+                'message': f'Error en el formato de los datos: {str(e)}'
             }), 400
-        
         # Encode de género
         input_data['Hombre'] = [1 if x == "Masculino" else 0 for x in input_data['Género']]
         input_data['Mujer'] = [1 if x == "Femenino" else 0 for x in input_data['Género']]
-        
+        print("Género codificado correctamente")
         # Encode de entrantes
         df_entrantes = pd.get_dummies(input_data["Entrante"], prefix='_')
+        print("Entrantes codificados correctamente")
         input_data = pd.concat([input_data, df_entrantes], axis=1)
-        
         # Encode de bebidas
         df_bebidas = pd.get_dummies(input_data['Bebida'], prefix='_')
+        print("Bebidas codificadas correctamente")
         input_data = pd.concat([input_data, df_bebidas], axis=1)
-        
         # Encode de primeros
         input_data['categoria_primero'] = input_data['Primer Plato'].map(primeros_cat)
         input_data['arroz'] = (input_data['categoria_primero'] == 'arroz').astype(int)
@@ -112,90 +106,92 @@ def predecir():
         input_data['verduras'] = (input_data['categoria_primero'] == 'verduras').astype(int)
         input_data['legumbres'] = (input_data['categoria_primero'] == 'legumbres').astype(int)
         input_data['sopa'] = (input_data['categoria_primero'] == 'sopa').astype(int)
-        
+        print("Primeros codificados correctamente")
         # Encode de segundos
         input_data['categoria_segundo'] = input_data['Segundo Plato'].map(segundos_cat)
         input_data['carne'] = (input_data['categoria_segundo'] == 'carne').astype(int)
         input_data['pescado'] = (input_data['categoria_segundo'] == 'pescado').astype(int)
-        
+        print("Segundos codificados correctamente")
         # Eliminar columnas no necesarias
-        columns_to_drop = ['Género', 'Entrante', 'Primer Plato', 'Segundo Plato', 'Bebida', 
+        columns_to_drop = ['Género', 'Entrante', 'Primer Plato', 'Segundo Plato', 'Bebida',
                           'categoria_primero', 'categoria_segundo']
         input_data = input_data.drop(columns=columns_to_drop)
-        
+        print("Columnas no necesarias eliminadas")
+        print("Columnas actuales:", input_data.columns.tolist())
         # Asegurarse de que todas las columnas necesarias estén presentes
         expected_columns = modelo.feature_names_in_
-        
+        print("Columnas esperadas:", expected_columns.tolist())
         # Crear columnas faltantes con valores 0
-        for col in expected_columns:
-            if col not in input_data.columns:
-                input_data[col] = 0
-        
+        missing_columns = set(expected_columns) - set(input_data.columns)
+        for col in missing_columns:
+            print(f"Añadiendo columna faltante: {col}")
+            input_data[col] = 0
         # Ordenar las columnas igual que en el entrenamiento
         input_data = input_data[expected_columns]
-        
+        print("Columnas ordenadas correctamente")
+        print("Columnas finales:", input_data.columns.tolist())
         print("\nDatos transformados:")
         print(input_data)
-        print("\nColumnas:", input_data.columns.tolist())
-        
         # Realizar predicción
         try:
-            prediccion = modelo.predict(input_data)[0]
-            # RidgeClassifier no tiene predict_proba, así que usamos una probabilidad fija
-            probabilidad = 0.90  # Probabilidad como decimal (90%)
-            
-            # Convertir predicción numérica a nombre del postre
-            postre_predicho = [k for k, v in postre_cat.items() if v == prediccion][0]
-            
-            print("\nPredicción numérica:", prediccion)
-            print("Postre predicho:", postre_predicho)
-            print("Probabilidad:", probabilidad)
-            
+            X = input_data.values
+            prediccion = modelo.predict(X)
+            probabilidades = modelo.predict_proba(X)
+            print("Predicción realizada exitosamente")
+            print("Predicción:", prediccion)
+            print("Probabilidades:", probabilidades)
+            # Obtener el postre predicho y su probabilidad
+            postre_predicho = list(postre_cat.keys())[prediccion[0]]
+            probabilidad = float(max(probabilidades[0]))
             return jsonify({
                 'success': True,
                 'postre': postre_predicho,
                 'probabilidad': probabilidad
             })
         except Exception as e:
-            print(f"Error en la predicción: {str(e)}")
+            print(f"Error al realizar la predicción: {str(e)}")
+            print("Forma del input:", input_data.shape)
+            print("Columnas del input:", input_data.columns.tolist())
+            import traceback
+            print(traceback.format_exc())
             return jsonify({
                 'success': False,
-                'message': 'Error al realizar la predicción'
+                'message': f'Error al realizar la predicción: {str(e)}'
             }), 500
-        
     except Exception as e:
-        print(f"\nError en predicción: {str(e)}")
+        print(f"Error general en la predicción: {str(e)}")
         import traceback
         print(traceback.format_exc())
         return jsonify({
             'success': False,
-            'message': 'Error interno del servidor'
+            'message': f'Error general en el servidor: {str(e)}'
         }), 500
-
 def inicializar_app():
     """
     Función para inicializar la aplicación y cargar el modelo
     """
     global modelo
-    
-    # Intentar cargar el modelo RidgeClassifier
-    if os.path.exists('RidgeClassifier.pkl'):
-        try:
-            with open('RidgeClassifier.pkl', 'rb') as f:
-                modelo = pickle.load(f)
-            print("Modelo RidgeClassifier cargado exitosamente")
-            print("Tipo de modelo:", type(modelo))
-        except Exception as e:
-            print(f"Error al cargar el modelo RidgeClassifier: {str(e)}")
-            import traceback
-            print(traceback.format_exc())
-            raise RuntimeError("No se pudo cargar el modelo RidgeClassifier")
-    else:
-        print("Error: No se encuentra el archivo del modelo 'RidgeClassifier.pkl'")
-        raise RuntimeError("No se encuentra el archivo del modelo")
-    
-    return app
-
+    try:
+        # Usar path absoluto para PythonAnywhere
+        modelo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modelo_postres.pkl')
+        print(f"Intentando cargar modelo desde: {modelo_path}")
+        if not os.path.exists(modelo_path):
+            print(f"ERROR: El archivo del modelo no existe en: {modelo_path}")
+            print(f"Directorio actual: {os.getcwd()}")
+            print(f"Contenido del directorio: {os.listdir(os.path.dirname(os.path.abspath(__file__)))}")
+            return app
+        with open(modelo_path, 'rb') as f:
+            modelo = pickle.load(f)
+        if modelo is None:
+            print("ERROR: El modelo se cargó como None")
+        else:
+            print(f"Modelo cargado exitosamente. Tipo: {type(modelo)}")
+        return app
+    except Exception as e:
+        print(f"Error al cargar el modelo: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        return app
+inicializar_app()
 if __name__ == '__main__':
-    app = inicializar_app()
-    #app.run(debug=True, port=5000)
+    app.run()
