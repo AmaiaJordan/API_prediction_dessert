@@ -178,13 +178,10 @@ def inicializar_app():
     """
     global modelo
     
-    # Ruta absoluta al directorio del modelo
-    modelo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'RidgeClassifier.pkl')
-    
     # Intentar cargar el modelo RidgeClassifier
-    if os.path.exists(modelo_path):
+    if os.path.exists('RidgeClassifier.pkl'):
         try:
-            with open(modelo_path, 'rb') as f:
+            with open('RidgeClassifier.pkl', 'rb') as f:
                 modelo = pickle.load(f)
             print("Modelo RidgeClassifier cargado exitosamente")
             print("Tipo de modelo:", type(modelo))
@@ -194,13 +191,11 @@ def inicializar_app():
             print(traceback.format_exc())
             raise RuntimeError("No se pudo cargar el modelo RidgeClassifier")
     else:
-        print(f"Error: No se encuentra el archivo del modelo en {modelo_path}")
+        print("Error: No se encuentra el archivo del modelo 'RidgeClassifier.pkl'")
         raise RuntimeError("No se encuentra el archivo del modelo")
     
     return app
 
-# Inicializar la aplicación al importar el módulo
-app = inicializar_app()
-
 if __name__ == '__main__':
-    app.run(debug=False)
+    app = inicializar_app()
+    #app.run(debug=True, port=5000)
