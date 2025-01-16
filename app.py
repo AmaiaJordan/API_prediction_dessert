@@ -4,6 +4,7 @@ import numpy as np
 import pickle
 import os
 from sklearn.linear_model import RidgeClassifier
+
 app = Flask(__name__)
 # Variables globales
 modelo = None
@@ -200,9 +201,3 @@ def inicializar_app():
 app = inicializar_app()
 if __name__ == '__main__':
     app.run()
-
-
-
-
-
-
